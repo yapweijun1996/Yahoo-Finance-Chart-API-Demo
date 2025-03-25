@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Yahoo Finance Chart API Demo with CORS Proxy</title>
+    <style>
+      body {
+        font-family: Arial, sans-serif;
+        background: #eef;
+        padding: 20px;
+      }
+      .container {
+        max-width: 600px;
+        margin: auto;
+        background: #fff;
+        padding: 20px;
+        border-radius: 8px;
+      }
+      input,
+      button {
+        padding: 10px;
+        margin: 5px 0;
+        width: 100%;
+        box-sizing: border-box;
+      }
+      .result {
+        margin-top: 20px;
+        white-space: pre-wrap;
+        word-wrap: break-word;
+      }
+      .error {
+        color: red;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="container">
+      <h1>Yahoo Finance Chart API Demo</h1>
+      <p>
+        Enter a stock symbol (e.g., AAPL, GOOG, MSFT) to fetch chart data from Yahoo Finance.
+      </p>
+      <input type="text" id="symbol" placeholder="Enter stock symbol (e.g., AAPL)" />
+      <button id="getChart">Get Chart Data</button>
+      <div class="result" id="result"></div>
+      <p class="error">
+        Note: If you encounter a "Failed to fetch" error, it is likely due to CORS restrictions. 
+        You can try using a CORS proxy.
+      </p>
+    </div>
+    <script>
+      document.getElementById("getChart").addEventListener("click", function () {
+        const symbol = document.getElementById("symbol").value.trim().toUpperCase();
+        const resultDiv = document.getElementById("result");
+        if (!symbol) {
+          alert("Please enter a stock symbol.");
+          return;
+        }
+        resultDiv.innerHTML = "Loading chart data...";
+        
+        // Yahoo Finance Chart API endpoint using symbol (e.g., AAPL)
+        const endpoint = `https://query1.finance.yahoo.com/v8/finance/chart/${symbol}`;
+        
+        // Use a CORS proxy if needed. Uncomment the following line if the request is blocked by CORS:
+        // const proxy = "https://cors-anywhere.herokuapp.com/";
+        // const url = proxy + endpoint;
+        
+        // Without using proxy set url to endpoint
+        const url = endpoint;
+        
+        fetch(url, {
+          method: "GET",
+          headers: {
+            "User-Agent": "Mozilla/5.0"
+          }
+        })
+          .then(response => {
+            if (!response.ok) {
+              throw new Error("Network response was not ok");
+            }
+            return response.json();
+          })
+          .then(data => {
+            if (data && data.chart && data.chart.result) {
+              const chartData = data.chart.result[0];
+              let output = `Chart Data for ${symbol}\n`;
+              output += `Timezone: ${chartData.meta && chartData.meta.timezone || "N/A"}\n\n`;
+              output += "Timestamps:\n";
+              output += chartData.timestamp ? chartData.timestamp.join(", ") : "N/A";
+              output += "\n\nIndicators:\n";
+              output += chartData.indicators ? JSON.stringify(chartData.indicators, null, 2) : "N/A";
+              resultDiv.textContent = output;
+            } else {
+              resultDiv.innerHTML = `No chart data found for symbol "${symbol}".`;
+            }
+          })
+          .catch(error => {
+            resultDiv.innerHTML = `Error: ${error.message}`;
+          });
+      });
+    </script>
+  </body>
+</html>
