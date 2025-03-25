@@ -3,101 +3,77 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Yahoo Finance Chart API Demo with CORS Proxy</title>
+    <title>Google Stock Chart Data</title>
+    <!-- CSS for basic styling -->
     <style>
+      /* Global styles [start] */
       body {
         font-family: Arial, sans-serif;
-        background: #eef;
+        background-color: #f7f7f7;
+        margin: 0;
         padding: 20px;
+        color: #333;
       }
+      h1 {
+        text-align: center;
+        color: #2e6da4;
+      }
+      /* Container styling [start] */
       .container {
-        max-width: 600px;
-        margin: auto;
-        background: #fff;
-        padding: 20px;
+        max-width: 800px;
+        margin: 0 auto;
+        background-color: #fff;
         border-radius: 8px;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        padding: 20px;
       }
-      input,
-      button {
-        padding: 10px;
-        margin: 5px 0;
-        width: 100%;
-        box-sizing: border-box;
+      pre {
+        background-color: #eaeaea;
+        padding: 15px;
+        border-radius: 4px;
+        overflow-x: auto;
       }
-      .result {
-        margin-top: 20px;
-        white-space: pre-wrap;
-        word-wrap: break-word;
-      }
-      .error {
-        color: red;
-      }
+      /* Container styling [end] */
+      /* Global styles [end] */
     </style>
   </head>
   <body>
     <div class="container">
-      <h1>Yahoo Finance Chart API Demo</h1>
-      <p>
-        Enter a stock symbol (e.g., AAPL, GOOG, MSFT) to fetch chart data from Yahoo Finance.
-      </p>
-      <input type="text" id="symbol" placeholder="Enter stock symbol (e.g., AAPL)" />
-      <button id="getChart">Get Chart Data</button>
-      <div class="result" id="result"></div>
-      <p class="error">
-        Note: If you encounter a "Failed to fetch" error, it is likely due to CORS restrictions. 
-        You can try using a CORS proxy.
-      </p>
+      <h1>Google Stock Chart Data from Yahoo Finance</h1>
+      <p>This page fetches Google's stock chart data from Yahoo Finance API.</p>
+      <!-- Content will be added inside this pre element -->
+      <pre id="dataDisplay">Loading data...</pre>
     </div>
+    
+    <!-- JavaScript code to fetch and display JSON data -->
     <script>
-      document.getElementById("getChart").addEventListener("click", function () {
-        const symbol = document.getElementById("symbol").value.trim().toUpperCase();
-        const resultDiv = document.getElementById("result");
-        if (!symbol) {
-          alert("Please enter a stock symbol.");
-          return;
-        }
-        resultDiv.innerHTML = "Loading chart data...";
+      // Function to fetch stock chart data from Yahoo Finance
+      function fetchStockChartData() {
+        // URL for Yahoo Finance's API to fetch Google (GOOG) stock chart data
+        const url = "https://query1.finance.yahoo.com/v8/finance/chart/goog";
         
-        // Yahoo Finance Chart API endpoint using symbol (e.g., AAPL)
-        const endpoint = `https://query1.finance.yahoo.com/v8/finance/chart/${symbol}`;
-        
-        // Use a CORS proxy if needed. Uncomment the following line if the request is blocked by CORS:
-        // const proxy = "https://cors-anywhere.herokuapp.com/";
-        // const url = proxy + endpoint;
-        
-        // Without using proxy set url to endpoint
-        const url = endpoint;
-        
-        fetch(url, {
-          method: "GET",
-          headers: {
-            "User-Agent": "Mozilla/5.0"
-          }
-        })
+        // Using fetch API to retrieve data from the URL
+        fetch(url)
           .then(response => {
+            // Check if response is OK
             if (!response.ok) {
-              throw new Error("Network response was not ok");
+              throw new Error('Network response was not ok: ' + response.statusText);
             }
+            // Parse response as JSON
             return response.json();
           })
           .then(data => {
-            if (data && data.chart && data.chart.result) {
-              const chartData = data.chart.result[0];
-              let output = `Chart Data for ${symbol}\n`;
-              output += `Timezone: ${chartData.meta && chartData.meta.timezone || "N/A"}\n\n`;
-              output += "Timestamps:\n";
-              output += chartData.timestamp ? chartData.timestamp.join(", ") : "N/A";
-              output += "\n\nIndicators:\n";
-              output += chartData.indicators ? JSON.stringify(chartData.indicators, null, 2) : "N/A";
-              resultDiv.textContent = output;
-            } else {
-              resultDiv.innerHTML = `No chart data found for symbol "${symbol}".`;
-            }
+            // Format JSON data with indentation and set it to the pre element.
+            document.getElementById('dataDisplay').textContent = JSON.stringify(data, null, 2);
           })
           .catch(error => {
-            resultDiv.innerHTML = `Error: ${error.message}`;
+            // In case of error, display error message
+            document.getElementById('dataDisplay').textContent = 'Error fetching data: ' + error.message;
           });
-      });
+      }
+      
+      // Call fetch function on page load
+      window.onload = fetchStockChartData;
     </script>
   </body>
 </html>
